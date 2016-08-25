@@ -1,11 +1,102 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>Hello!</title>
+<head>
+    <meta charset="utf-8">
+    <title>user search</title>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
+	<div class="container">
+      <h2>Search Name</h2>
+      <div class="input-group col-xs-3">
+         <input type="text" name="uname" id="uname" class="form-control">
+         <span class="input-group-btn">
+              <button class="btn btn-primary" onclick="finduser();" type="button">Find</button>
+         </span>
+      </div>  
+      <div class="alert alert-danger" id="notf" style="visibility:hidden">
+        
+      </div>
+      <div class="" id="sdata" style="visibility:hidden">
+         <br> <img id="userimg" src="" class=""/><br>
+          @username:<h1 id="username" class=""></h1>
+          Bio:<p id="bio" class=""></p>
+          Full Name:<p id="fname" class=""></p>
+          <h2>Repos</h2>
+          <div id="repos" class="">
+          </div>
+          <hr size="30">
+      </div>       
+      <ul id="users"></ul>
+  </div>
 
-<h1>Hello!</h1>
+
+
 </body>
+
+<script>
+function finduser(gname){
+  var datelement=document.getElementById("sdata");
+   var nf=document.getElementById("notf");
+   nf.style.visibility = "hidden";
+   datelement.style.visibility = "hidden";
+  var http = new XMLHttpRequest();
+  var url = "api.php";
+  var params = "uname="+document.getElementById("uname").value;
+  http.open("POST", url, true);
+
+  //Send the proper header information along with the request
+  http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  http.onreadystatechange = function() {//Call a function when the state changes.
+      if(http.readyState == 4 && http.status == 200) {
+          rdata=http.responseText;
+          var getContact = JSON.parse(rdata);
+          if(getContact.message=="Not Found")
+          {
+            nf.style.visibility = "";
+            nf.innerHTML="User Doesn't Exist!!";
+          }else{
+            
+            datelement.style.visibility = "";
+          document.getElementById("username").innerHTML=getContact.login;
+          document.getElementById("userimg").setAttribute("src",getContact.avatar_url);
+           document.getElementById("fname").innerHTML=getContact.name;
+          document.getElementById("bio").innerHTML=getContact.bio;
+          get_repos(getContact.repos_url);
+          }
+      }
+  }
+  http.send(params);
+}
+
+function get_repos(nurl)
+{
+  var http = new XMLHttpRequest();
+  var url = "api.php";
+  var params = "repo_link="+nurl;
+  http.open("POST", url, true);
+  //Send the proper header information along with the request
+  http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  http.onreadystatechange = function() {//Call a function when the state changes.
+      if(http.readyState == 4 && http.status == 200) {
+          rdata=http.responseText;
+          var repos = JSON.parse(rdata);
+          console.log(repos.length);
+          for (var i = 0; i < repos.length; i++){
+              var obj = repos[i];
+              console.log(obj.full_name);
+              link="https://github.com/"+obj.full_name;
+              var a=document.getElementById("repos");
+              a.innerHTML+="<br><a href="+link+">"+obj.name+"</a>";
+          }
+      }
+  }
+  http.send(params);
+}
+
+
+</script>
+
 </html>
